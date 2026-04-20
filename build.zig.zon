@@ -1,0 +1,20 @@
+.{
+    .name = .wombat_cc,
+    .version = "0.1.0",
+    .fingerprint = 0x69d983eccff479ab,
+    .minimum_zig_version = "0.16.0",
+
+    .dependencies = .{
+        .wombat_os = .{
+            .url = "https://github.com/kipr/wombat-os/archive/refs/tags/v31.2.0.tar.gz",
+            .hash = "N-V-__8AAFy-7gMJX41JZq0XgQhY0P9XV_yRQzKMby8UPjy_",
+        },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "build",
+        "src",
+    },
+}

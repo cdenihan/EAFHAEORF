@@ -1,0 +1,57 @@
+name: Release on Tag
+
+on:
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: write
+
+jobs:
+    build-and-release:
+        runs-on: ubuntu-latest
+        env:
+            ZIG_VERSION: 0.16.0
+
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: mlugg/setup-zig@v2.2.1
+              if: github.repository != 'Wombat-CC/Wombat-CC'
+              with:
+                  version: ${{ env.ZIG_VERSION }}
+
+            - name: Cache Zig build artifacts
+              if: github.repository != 'Wombat-CC/Wombat-CC'
+              uses: actions/cache@v5
+              with:
+                  path: |
+                      .zig-cache
+                      zig-cache
+                      zig-pkg
+                      ~/.cache/zig
+                  key: ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-${{ hashFiles('build.zig', 'build.zig.zon', 'build/extract_kipr.zig') }}
+                  restore-keys: |
+                      ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-
+
+            - name: Build (aarch64-linux, ReleaseFast)
+              if: github.repository != 'Wombat-CC/Wombat-CC'
+              run: zig build -Doptimize=ReleaseFast
+
+            - name: Create Release (no binary for template repo)
+              if: github.repository == 'Wombat-CC/Wombat-CC'
+              uses: softprops/action-gh-release@v3
+              with:
+                  name: ${{ github.ref_name }}
+                  draft: false
+                  prerelease: false
+
+            - name: Create Release and Upload Binary
+              if: github.repository != 'Wombat-CC/Wombat-CC'
+              uses: softprops/action-gh-release@v3
+              with:
+                  name: ${{ github.ref_name }}
+                  draft: false
+                  prerelease: false
+                  files: zig-out/bin/botball_user_program

@@ -1,0 +1,27 @@
+# Zig build artifacts
+zig-out/
+.zig-cache/
+zig-cache/
+zig-pkg/
+.wombat-sdk-cache/
+
+# Legacy build artifacts
+out/
+
+# Nix
+result
+result-*
+
+# direnv
+.direnv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*~
+
+# CodeQL
+_codeql_detected_source_root
