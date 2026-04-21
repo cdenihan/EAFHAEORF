@@ -42,24 +42,13 @@ pub fn build(b: *std.Build) void {
     const optimize = requested_optimize orelse .ReleaseFast;
     const kipr_sdk_path = b.option([]const u8, "kipr_sdk_path", "Path to a pre-extracted KIPR SDK root (supports include/lib or usr/include/usr/lib); skips SDK extraction");
     const sdk_cache_path = b.option([]const u8, "sdk_cache_path", "Path for extracted KIPR SDK cache when -Dkipr_sdk_path is not set") orelse ".zig-cache/wombat-sdk/kipr_sdk";
-    const fast_ci = b.option(bool, "fast_ci", "Favor compile-validation speed for CI checks") orelse false;
-    const aggressive_speed = b.option(bool, "aggressive_speed", "Reduce C/C++ diagnostics to maximize compile throughput") orelse false;
-    const fast_checks = fast_ci or aggressive_speed;
-    std.log.info("Build target: {s}-{s}-{s}", .{
+    std.log.info("Build summary:", .{});
+    std.log.info("  Target: {s}-{s}-{s}", .{
         @tagName(target.result.cpu.arch),
         @tagName(target.result.os.tag),
         @tagName(target.result.abi),
     });
-    std.log.info("Optimization mode: {s} ({s})", .{ @tagName(optimize), optimizeIntent(optimize) });
-    if (requested_optimize == null) {
-        std.log.info("No -Doptimize supplied; defaulting to ReleaseFast for production-speed binaries.", .{});
-    }
-    if (fast_ci) {
-        std.log.info("Fast CI mode enabled (-Dfast_ci=true).", .{});
-    }
-    if (aggressive_speed) {
-        std.log.warn("Aggressive speed mode enabled: C/C++ warnings disabled (-w).", .{});
-    }
+    std.log.info("  Optimize: {s}", .{@tagName(optimize)});
 
     // ── Extract KIPR SDK (cross-platform, pure Zig) ──────────────────
     // Uses an in-process custom step that unpacks headers and libkipr.so
@@ -82,11 +71,8 @@ pub fn build(b: *std.Build) void {
 
         kipr_include = .{ .cwd_relative = if (has_usr_layout) include_usr else include_root };
         kipr_lib = .{ .cwd_relative = if (has_usr_layout) lib_usr else lib_root };
-        std.log.info("SDK mode: external path ({s})", .{sdk_path});
-        std.log.info("SDK include path: {s}", .{if (has_usr_layout) include_usr else include_root});
-        std.log.info("SDK library path: {s}", .{if (has_usr_layout) lib_usr else lib_root});
+        std.log.info("  SDK: external path ({s})", .{sdk_path});
     } else {
-        std.log.info("SDK mode: extracted from wombat_os package (cached at {s}).", .{sdk_cache_path});
         const wombat_dep = b.dependency("wombat_os", .{});
         const run_extract = ExtractKiprSdkStep.create(
             b,
@@ -120,7 +106,7 @@ pub fn build(b: *std.Build) void {
             },
         };
     } else &.{};
-    std.log.info("Source scan: main.zig={s}, C files={d}, C++ files={d}", .{
+    std.log.info("  Sources: main.zig={s}, C={d}, C++={d}", .{
         if (has_zig_main) "yes" else "no",
         c_files.len,
         cpp_files.len,
@@ -131,8 +117,10 @@ pub fn build(b: *std.Build) void {
     const library_dep_names = collectLibraryDependencyNames(b);
     const library_dep_count = library_dep_names.len;
     const needs_libcpp = has_cpp_sources or library_dep_count > 0;
-    std.log.info("Detected wombat_cc_lib_* dependencies: {d}", .{library_dep_count});
-    std.log.info("libc++ linkage: {s}", .{if (needs_libcpp) "enabled" else "disabled"});
+    std.log.info("  Libraries: wombat_cc_lib_*={d}, link libc++={s}", .{
+        library_dep_count,
+        if (needs_libcpp) "yes" else "no",
+    });
 
     const exe = b.addExecutable(.{
         .name = "botball_user_program",
@@ -157,15 +145,8 @@ pub fn build(b: *std.Build) void {
     exe.root_module.linkSystemLibrary("kipr", .{});
     linkLibraryDependencies(b, exe, target, optimize, library_dep_names, kipr_include, extract_step);
 
-    const c_compile_flags: []const []const u8 = if (fast_checks)
-        &.{ "-std=c11", "-w" }
-    else
-        &.{ "-std=c11", "-Wall", "-Wextra" };
-    const cpp_compile_flags: []const []const u8 = if (fast_checks)
-        &.{ "-std=c++26", "-w" }
-    else
-        &.{ "-std=c++26", "-Wall", "-Wextra" };
-    std.log.info("C/C++ diagnostics mode: {s}", .{if (fast_checks) "fast (-w)" else "standard (-Wall -Wextra)"});
+    const c_compile_flags: []const []const u8 = &.{ "-std=c11", "-Wall", "-Wextra" };
+    const cpp_compile_flags: []const []const u8 = &.{ "-std=c++26", "-Wall", "-Wextra" };
 
     // Compile any C source files in src/
     if (c_files.len > 0) {
@@ -187,12 +168,10 @@ pub fn build(b: *std.Build) void {
 
     const check_step = b.step("check", "Compile botball_user_program without installation");
     check_step.dependOn(&exe.step);
-    const ci_step = b.step("ci", "Alias for compile-only CI validation");
-    ci_step.dependOn(check_step);
 
     b.installArtifact(exe);
     b.default_step = b.getInstallStep();
-    std.log.info("Build steps: default install emits zig-out/bin/botball_user_program; use 'check'/'ci' for compile-only", .{});
+    std.log.info("  Output: zig-out/bin/botball_user_program", .{});
 
     // ── Run step ─────────────────────────────────────────────────────
     // Only define a `run` step when the build target matches the host.
@@ -262,11 +241,9 @@ const ExtractKiprSdkStep = struct {
             .size = deb_stat.size,
             .mtime = @as(i128, deb_stat.mtime.nanoseconds),
         };
-        std.log.info("extract_kipr: source package = {s} ({d} bytes)", .{ deb_path, expected_stamp.size });
 
         switch (try reuseIfCurrent(io, deb_path, out_path, expected_stamp)) {
             .metadata_hit => {
-                std.log.info("extract_kipr: reusing cached SDK (metadata match)", .{});
                 return;
             },
             .hash_hit => {

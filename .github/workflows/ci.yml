@@ -41,7 +41,7 @@ jobs:
 
             - name: Fast compile check (template repo)
               if: github.repository == 'Wombat-CC/Wombat-CC'
-              run: zig build check -Doptimize=Debug -Dfast_ci=true
+                            run: zig build check -Doptimize=Debug
 
             - name: Build (aarch64-linux, ReleaseFast)
               if: github.repository != 'Wombat-CC/Wombat-CC'
