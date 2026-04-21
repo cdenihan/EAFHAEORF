@@ -20,6 +20,8 @@ jobs:
 
         steps:
             - uses: actions/checkout@v6
+              with:
+                  submodules: recursive
 
             - uses: mlugg/setup-zig@v2.2.1
               with:
@@ -33,7 +35,7 @@ jobs:
                       zig-cache
                       zig-pkg
                       ${{ runner.os == 'Windows' && '~\\AppData\\Local\\zig' || '~/.cache/zig' }}
-                  key: ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-${{ hashFiles('build.zig', 'build.zig.zon', 'build/extract_kipr.zig') }}
+                  key: ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-${{ hashFiles('build.zig', 'build.zig.zon') }}
                   restore-keys: |
                       ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-
 

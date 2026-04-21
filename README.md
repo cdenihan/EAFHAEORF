@@ -57,8 +57,6 @@ Speed-related build flags:
 your-project/
 ├── build.zig          # Build configuration (auto-fetches KIPR SDK)
 ├── build.zig.zon      # Package manifest (pins wombat-os version)
-├── build/
-│   └── extract_kipr.zig   # Pure-Zig cross-platform SDK extractor
 ├── src/
 │   ├── main.zig       # Your code — Zig entry point (default)
 │   └── _init_helper.c # Stdout unbuffering for C/C++ mode
@@ -93,7 +91,7 @@ Delete `src/main.zig` and place `.c`, `.cpp`, `.cc`, or `.cxx` files in `src/`. 
 ## How It Works
 
 1. **Zig fetches** the pinned [wombat-os](https://github.com/kipr/wombat-os) release tarball (cached after first download)
-2. **A pure-Zig build tool** extracts the `kipr.deb` package — no shell commands, works on Windows/macOS/Linux
+2. **A pure-Zig custom step in `build.zig`** extracts the `kipr.deb` package — no shell commands, works on Windows/macOS/Linux
 3. **Headers and `libkipr.so`** are made available to the compiler automatically
 4. **Zig cross-compiles** your code targeting `aarch64-linux-gnu`
 5. **The binary** links against `libkipr.so` (already installed on every Wombat at `/usr/lib/libkipr.so`)
