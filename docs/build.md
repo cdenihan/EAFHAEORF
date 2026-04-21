@@ -242,7 +242,7 @@ When a library exports named lazy path `include`, you can include headers with a
 
 ```cpp
 #include <Arm.hpp>
-#include <Drivetrain.hpp>
+#include <Wombat-CC/Drivetrain.hpp>
 ```
 
 Example:

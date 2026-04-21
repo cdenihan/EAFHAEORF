@@ -142,9 +142,9 @@ pub fn build(b: *std.Build) void {
     else
         &.{ "-std=c11", "-Wall", "-Wextra" };
     const cpp_compile_flags: []const []const u8 = if (fast_checks)
-        &.{ "-std=c++17", "-w" }
+        &.{ "-std=c++26", "-w" }
     else
-        &.{ "-std=c++17", "-Wall", "-Wextra" };
+        &.{ "-std=c++26", "-Wall", "-Wextra" };
     std.log.info("C/C++ diagnostics mode: {s}", .{if (fast_checks) "fast (-w)" else "standard (-Wall -Wextra)"});
 
     // Compile any C source files in src/

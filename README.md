@@ -200,7 +200,7 @@ Use a C++ `src/main.cpp` and include the exported headers directly:
 
 ```cpp
 #include <Arm.hpp>
-#include <Drivetrain.hpp>
+#include <Wombat-CC/Drivetrain.hpp>
 
 int main() {
     Arm arm(1, 2, 3);
