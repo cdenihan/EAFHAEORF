@@ -43,13 +43,15 @@ The output binary is at `zig-out/bin/botball_user_program`.
 Speed-related build flags:
 
 - `-Dkipr_sdk_path=<path>`: use a pre-extracted SDK at `<path>/include` + `<path>/lib` (or `<path>/usr/include` + `<path>/usr/lib`) and skip extraction
-- `-Dsdk_cache_path=<path>`: set where extracted SDK files are cached when auto-extraction is used (default: `.wombat-sdk-cache/kipr_sdk`)
+- `-Dsdk_cache_path=<path>`: set where extracted SDK files are cached when auto-extraction is used (default: `.zig-cache/wombat-sdk/kipr_sdk`)
 - `-Dfast_ci=true`: favors compile-validation throughput
 - `-Daggressive_speed=true`: reduces C/C++ diagnostics for faster C/C++ compilation
 - `-fincremental`: enables Zig incremental compilation (can reduce changed-file rebuild time; benchmark on your machine)
 - `--cache-dir <path>`: overrides local cache path (use a fast local disk)
 - `--global-cache-dir <path>`: overrides global cache path (useful for persistent shared cache)
 - `--watch --debounce <ms>`: rebuild automatically after changes
+
+By default this template now caches extracted SDK files under `.zig-cache/wombat-sdk/kipr_sdk`. Note that Zig 0.16 still materializes dependency package data in `zig-pkg/`; that directory is managed by Zig and is not currently redirected from `build.zig`.
 
 ### Project Layout
 

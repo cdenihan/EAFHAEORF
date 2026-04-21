@@ -13,9 +13,13 @@ jobs:
         runs-on: ubuntu-latest
         env:
             ZIG_VERSION: 0.16.0
+            ZIG_LOCAL_CACHE_DIR: .zig-cache
+            ZIG_GLOBAL_CACHE_DIR: .zig-cache
 
         steps:
             - uses: actions/checkout@v6
+              with:
+                  submodules: recursive
 
             - uses: mlugg/setup-zig@v2.2.1
               if: github.repository != 'Wombat-CC/Wombat-CC'
@@ -28,9 +32,7 @@ jobs:
               with:
                   path: |
                       .zig-cache
-                      zig-cache
                       zig-pkg
-                      ~/.cache/zig
                   key: ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-${{ hashFiles('build.zig', 'build.zig.zon') }}
                   restore-keys: |
                       ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-

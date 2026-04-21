@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) void {
     const requested_optimize = b.option(std.builtin.OptimizeMode, "optimize", "Prioritize performance, safety, or binary size");
     const optimize = requested_optimize orelse .ReleaseFast;
     const kipr_sdk_path = b.option([]const u8, "kipr_sdk_path", "Path to a pre-extracted KIPR SDK root (supports include/lib or usr/include/usr/lib); skips SDK extraction");
-    const sdk_cache_path = b.option([]const u8, "sdk_cache_path", "Path for extracted KIPR SDK cache when -Dkipr_sdk_path is not set") orelse ".wombat-sdk-cache/kipr_sdk";
+    const sdk_cache_path = b.option([]const u8, "sdk_cache_path", "Path for extracted KIPR SDK cache when -Dkipr_sdk_path is not set") orelse ".zig-cache/wombat-sdk/kipr_sdk";
     const fast_ci = b.option(bool, "fast_ci", "Favor compile-validation speed for CI checks") orelse false;
     const aggressive_speed = b.option(bool, "aggressive_speed", "Reduce C/C++ diagnostics to maximize compile throughput") orelse false;
     const fast_checks = fast_ci or aggressive_speed;
@@ -155,7 +155,7 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addLibraryPath(kipr_lib);
     exe.root_module.addRPath(.{ .cwd_relative = "/usr/lib" });
     exe.root_module.linkSystemLibrary("kipr", .{});
-    linkLibraryDependencies(b, exe, target, optimize, library_dep_names, kipr_include);
+    linkLibraryDependencies(b, exe, target, optimize, library_dep_names, kipr_include, extract_step);
 
     const c_compile_flags: []const []const u8 = if (fast_checks)
         &.{ "-std=c11", "-w" }
@@ -539,6 +539,7 @@ fn linkLibraryDependencies(
     optimize: std.builtin.OptimizeMode,
     library_dep_names: []const []const u8,
     kipr_include: std.Build.LazyPath,
+    extract_step: ?*std.Build.Step,
 ) void {
     for (library_dep_names) |dep_name| {
         const lib_dep = b.lazyDependency(dep_name, .{
@@ -547,8 +548,11 @@ fn linkLibraryDependencies(
             .kipr_include = kipr_include,
         }) orelse continue;
 
+        const lib_artifact = lib_dep.artifact("lib");
+        if (extract_step) |step| lib_artifact.step.dependOn(step);
+
         exe.root_module.addIncludePath(lib_dep.namedLazyPath("include"));
-        exe.root_module.linkLibrary(lib_dep.artifact("lib"));
+        exe.root_module.linkLibrary(lib_artifact);
     }
 }
 

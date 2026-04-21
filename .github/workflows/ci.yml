@@ -17,6 +17,8 @@ jobs:
         runs-on: ${{ matrix.os }}
         env:
             ZIG_VERSION: 0.16.0
+            ZIG_LOCAL_CACHE_DIR: .zig-cache
+            ZIG_GLOBAL_CACHE_DIR: .zig-cache
 
         steps:
             - uses: actions/checkout@v6
@@ -32,9 +34,7 @@ jobs:
               with:
                   path: |
                       .zig-cache
-                      zig-cache
                       zig-pkg
-                      ${{ runner.os == 'Windows' && '~\\AppData\\Local\\zig' || '~/.cache/zig' }}
                   key: ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-${{ hashFiles('build.zig', 'build.zig.zon') }}
                   restore-keys: |
                       ${{ runner.os }}-zig-${{ env.ZIG_VERSION }}-
