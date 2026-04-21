@@ -106,11 +106,21 @@ pub fn build(b: *std.Build) void {
             },
         };
     } else &.{};
-    std.log.info("  Sources: main.zig={s}, C={d}, C++={d}", .{
-        if (has_zig_main) "yes" else "no",
-        c_files.len,
-        cpp_files.len,
-    });
+    if (has_zig_main and c_files.len > 0 and cpp_files.len > 0) {
+        std.log.info("  Sources: Zig=1, C={d}, C++={d}", .{ c_files.len, cpp_files.len });
+    } else if (has_zig_main and c_files.len > 0) {
+        std.log.info("  Sources: Zig=1, C={d}", .{c_files.len});
+    } else if (has_zig_main and cpp_files.len > 0) {
+        std.log.info("  Sources: Zig=1, C++={d}", .{cpp_files.len});
+    } else if (c_files.len > 0 and cpp_files.len > 0) {
+        std.log.info("  Sources: C={d}, C++={d}", .{ c_files.len, cpp_files.len });
+    } else if (has_zig_main) {
+        std.log.info("  Sources: Zig=1", .{});
+    } else if (c_files.len > 0) {
+        std.log.info("  Sources: C={d}", .{c_files.len});
+    } else if (cpp_files.len > 0) {
+        std.log.info("  Sources: C++={d}", .{cpp_files.len});
+    }
 
     // ── User executable ──────────────────────────────────────────────
     const has_cpp_sources = cpp_files.len > 0;
