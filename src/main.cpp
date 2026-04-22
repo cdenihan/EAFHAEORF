@@ -1,8 +1,8 @@
 #include <iostream>
-#include <thread>
 #include <kipr/wombat.h>
 #include <Wombat-CC/Arm.hpp>
 #include <Wombat-CC/Drivetrain.hpp>
+#include <Wombat-CC/Utilities.hpp>
 
 namespace ShoulderPositions
 {
@@ -47,7 +47,7 @@ constexpr int TICKS_PER_DEGREE = TICKS_PER_180 / 180;
 namespace MotorPorts
 {
     constexpr int ARM_SHOULDER = 0;
-    constexpr int ARM_ELBOW = 1;
+    constexpr int ARM_CLAW = 2;
 
     constexpr int DRIVETRAIN_FL = 0;
     constexpr int DRIVETRAIN_FR = 1;
@@ -81,36 +81,15 @@ namespace Runtime
     constexpr int SHUTDOWN_SECONDS = 118;
 } // namespace Runtime
 
-void kill()
-{
-    std::thread([]()
-                {
-        while (true)
-        {
-            if (push_button() == 1)
-            {
-                std::cout << "Kill button pressed. Stopping motors and servos." << std::endl;
-
-                ao();
-                disable_servos();
-
-                // Hard stop the program
-                std::exit(0);
-            }
-
-            msleep(10);
-        } })
-        .detach();
-}
-
 int main()
 {
-    kill();
+    Wombat_CC::Utilities::autokill();
 
     std::cout << "Welcome to your Wombat CC project (C++)" << std::endl;
     std::cout << "Using KIPR libwallaby v" << KIPR_VERSION << std::endl;
 
-    Arm Arm(MotorPorts::ARM_SHOULDER, MotorPorts::ARM_ELBOW);
+    Arm Arm(MotorPorts::ARM_SHOULDER,
+            MotorPorts::ARM_CLAW);
     Drivetrain Drivetrain(MotorPorts::DRIVETRAIN_FL,
                           MotorPorts::DRIVETRAIN_FR,
                           MotorPorts::DRIVETRAIN_RL,

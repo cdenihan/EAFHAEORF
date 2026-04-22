@@ -11,6 +11,7 @@
         },
         .wombat_cc_lib_arm = .{ .path = "lib/Wombat-CC-Arm" },
         .wombat_cc_lib_drivetrain = .{ .path = "lib/Wombat-CC-Drivetrain" },
+        .wombat_cc_lib_utilities = .{ .path = "lib/Wombat-CC-Utilities" },
     },
 
     .paths = .{
