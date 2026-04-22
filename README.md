@@ -202,9 +202,11 @@ Use a C++ `src/main.cpp` and include the exported headers directly:
 
 int main() {
     Arm arm(1, 2, 3);
-    Drivetrain drivetrain(0, 1, 2, 3, 0, 1);
+    Drivetrain drivetrain(0, 1, 2, 3);
     drivetrain.SetPerformance(1.0, 1.0, 1.0, 1.0);
-    drivetrain.DriveForwardLineTracking(5000, 1000);
+    drivetrain.ConfigureLineTrackingSensors(0, 1);
+    drivetrain.SetLineTrackingThresholds(200, 200, 3600, 3600);
+    drivetrain.DriveLineTracking.Forward(5000, 1000);
     return 0;
 }
 ```
@@ -217,9 +219,11 @@ Wrapper header example (`drivetrain_c_api.h`):
 
 ```c
 typedef struct DrivetrainHandle DrivetrainHandle;
-DrivetrainHandle* drivetrain_create(int fl, int fr, int rl, int rr, int fl_ir, int fr_ir);
+DrivetrainHandle* drivetrain_create(int fl, int fr, int rl, int rr);
 void drivetrain_destroy(DrivetrainHandle* handle);
 void drivetrain_set_performance(DrivetrainHandle* handle, double flp, double frp, double rlp, double rrp);
+void drivetrain_configure_line_tracking_sensors(DrivetrainHandle* handle, int fl_ir, int fr_ir);
+void drivetrain_set_line_tracking_thresholds(DrivetrainHandle* handle, int fl_white, int fr_white, int fl_black, int fr_black);
 void drivetrain_drive_forward_line_tracking(DrivetrainHandle* handle, int ticks, int speed);
 ```
 
@@ -231,9 +235,11 @@ Zig usage:
 const dt = @import("drivetrain_c");
 
 pub fn main() void {
-    const drive = dt.drivetrain_create(0, 1, 2, 3, 0, 1);
+    const drive = dt.drivetrain_create(0, 1, 2, 3);
     defer dt.drivetrain_destroy(drive);
     dt.drivetrain_set_performance(drive, 1.0, 1.0, 1.0, 1.0);
+    dt.drivetrain_configure_line_tracking_sensors(drive, 0, 1);
+    dt.drivetrain_set_line_tracking_thresholds(drive, 200, 200, 3600, 3600);
     dt.drivetrain_drive_forward_line_tracking(drive, 5000, 1000);
 }
 ```
