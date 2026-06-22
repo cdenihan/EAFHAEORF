@@ -21,7 +21,7 @@ jobs:
       ZIG_LOCAL_CACHE_DIR: .zig-cache
       ZIG_GLOBAL_CACHE_DIR: .zig-cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - uses: mlugg/setup-zig@v2.2.1
